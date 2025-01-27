@@ -4,9 +4,8 @@
 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ clcmds ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
 server_cmd("endround") // end round
-server_cmd("mp_freeforall 1") // kill anyone
+server_cmd("mp_freeforall 1") // kill anyone including team mates
 erver_cmd("mp_round_infinite 0") // not infinite
-erver_cmd("mp_round_infinite abf") // infinite
 
 
 // M/Change team
@@ -304,6 +303,27 @@ public fw_TakeDamage_Post(const iVictim, const iInflector, const iAttacker, cons
 	if (iVictim == iAttacker || !is_user_connected(iVictim))
 		return
 	
+}
+
+// trace attack pre
+
+RegisterHookChain(RG_CBasePlayer_TraceAttack, "fw_TraceAttack_Pre", 0)
+
+public fw_TraceAttack_Pre(const iVictim, const iAttacker, const Float:flDamage, const Float:vDirecton[3], const pTrace, bitsDamageType)
+{
+	// Damage himself or player not on game?
+	if (iVictim == iAttacker || !is_user_connected(iVictim) || !is_user_connected(iAttacker))
+		return HC_CONTINUE
+
+	// Round Ended!
+	if (g_bRoundEnd)
+		return HC_SUPERCEDE
+
+	// Teammate?
+	if (flag_get_boolean(g_bitsIsZombie, iVictim) == flag_get_boolean(g_bitsIsZombie, iAttacker))
+		return HC_CONTINUE
+
+	return HC_CONTINUE
 }
 
 */
