@@ -1,8 +1,4 @@
 // Copyright © 2017 Vaqtincha
-
-#include <reapi>
-
-
 /*
 
 put calls in plugin_init and functions are like public xyz
@@ -102,17 +98,109 @@ public fw_TraceAttack(victim, attacker, Float:damage, Float:direction[3], traceh
 	return HAM_IGNORED;
 }
 
-// client put in the server
+// client kill/suicide - registering forwards
 
-public client_putinserver(id) { // Client joins the game
+register_forward(FM_ClientKill, "fw_ClientKill")
 
+public fw_ClientKill() { // Client Kill/Suicide Forward
+	if(get_pcvar_num(cvar_blocksuicide)) return FMRES_SUPERCEDE; // Prevent players from killing themselves?
+
+	return FMRES_IGNORED;
 }
+
 
 // client disconnected
 register_forward(FM_ClientDisconnect, "fw_ClientDisconnect")
 
+public fw_ClientDisconnect(id) { // Client leaving
+
+	// examples
+	save_stats(id)
+	remove_task(id+TASK_BLOOD)
+	remove_task(id+TASK_AURA)
+
+	g_isconnected[id] = false
+	g_isalive[id] = false
+}
+
+
 // client disconnected post
 register_forward(FM_ClientDisconnect, "fw_ClientDisconnect_Post", 1)
+
+public fw_ClientDisconnect_Post() {
+	fnCheckSomeoneElseForHisRole(); // example if there is any function to replace the leaver
+}
+
+fnCheckSomeoneElseForHisRole() { // Last T Check -check for last t and set its flag-
+	static id, NumT, NumCt
+	NumT = fnGetT();
+	NumCt = fnGetCt();
+	for(id = 1; id <= MaxClients; id++) {
+		if(!is_user_alive[id])
+			continue;
+
+		if(NumT == 1) { // Last t
+			if(!g_lastt[id]) {
+				fm_set_user_health(id, fm_get_user_health(id) + 100) // Reward extra hp
+			}
+			g_lastt[id] = true
+		}
+		else g_lastt[id] = false
+
+		if(NumCt == 1) { // Last ct
+			if(!g_lastct[id]) {
+				fm_set_user_health(id, fm_get_user_health(id) + 100) // Reward extra hp
+			}
+			g_lastct[id] = true
+		}
+		else g_lastct[id] = false
+	}
+}
+
+fnGetT() { // Get T -returns alive t number-
+	static iT, id; iT = 0
+	for(id = 1; id <= MaxClients; id++) if(is_user_alive[id] && g_t[id]) iT++
+	return iT;
+}
+fnGetCt() { // Get Ct -returns alive ct number-
+	static iCt, id; iCt = 0
+	for(id = 1; id <= MaxClients; id++) if(g_isalive[id] && !g_zombie[id]) iCts++
+
+	return iCt;
+}
+
+// client put in the server - events
+
+public client_putinserver(id) { // Client joins the game
+	
+}
+
+// event round start
+
+register_event("HLTV", "event_round_start", "a", "1=0", "2=0")
+
+public event_round_start() { // Event Round Start
+	for(new id = 1; i <= MaxClients; id++)
+		if(is_user_alive(id))
+		{
+			fm_set_user_health(id, fm_get_user_health(id) + 100)
+		}
+}
+
+// fakemta teams
+
+enum { // CS Teams
+	FM_CS_TEAM_UNASSIGNED = 0,
+	FM_CS_TEAM_T,
+	FM_CS_TEAM_CT,
+	FM_CS_TEAM_SPECTATOR
+};
+
+	if(fm_cs_get_user_team(id) != FM_CS_TEAM_CT || fm_cs_get_user_team(id) == FM_CS_TEAM_CT) { // if not ct make ct
+		fm_cs_set_user_team(id, FM_CS_TEAM_CT)
+		fm_cs_get_user_team(id) = FM_CS_TEAM_CT
+	}
+
 
 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ Forward call and functions - reapi ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
@@ -150,6 +238,16 @@ public fw_TakeDamage_Post(const iVictim, const iInflector, const iAttacker, cons
 }
 
 */
+
+#if defined _reapi_stocks_included
+	#endinput
+#endif
+
+#define _reapi_stocks_included
+
+#if !defined _reapi_included
+	#include <reapi>
+#endif
 
 const GRENADES_BIT_SUM = ((1<<_:WEAPON_HEGRENADE)|(1<<_:WEAPON_SMOKEGRENADE)|(1<<_:WEAPON_FLASHBANG))
 const NOCLIP_WEAPONS_BIT_SUM = (GRENADES_BIT_SUM|(1<<_:WEAPON_KNIFE)|(1<<_:WEAPON_C4))
