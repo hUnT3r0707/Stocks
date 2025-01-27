@@ -1,14 +1,14 @@
 // Copyright © 2017 Vaqtincha
 
-#if defined _reapi_stocks_included
-	#endinput
-#endif
+#include <reapi>
 
-#define _reapi_stocks_included
 
-#if !defined _reapi_included
-	#include <reapi>
-#endif
+/*
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ Forwards that go in init ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ Forwards ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+*/
 
 const GRENADES_BIT_SUM = ((1<<_:WEAPON_HEGRENADE)|(1<<_:WEAPON_SMOKEGRENADE)|(1<<_:WEAPON_FLASHBANG))
 const NOCLIP_WEAPONS_BIT_SUM = (GRENADES_BIT_SUM|(1<<_:WEAPON_KNIFE)|(1<<_:WEAPON_C4))
@@ -771,3 +771,4 @@ stock rg_user_kill(const victim, const attacker, bool:givefrag = true)
 		}
 	}
 }
+
