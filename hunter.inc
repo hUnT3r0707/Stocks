@@ -4,10 +4,151 @@
 
 
 /*
-■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ Forwards that go in init ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+put calls in plugin_init and functions are like public xyz
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ Forward call and functions - hamsandwich & others ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+// spawn
+RegisterHam(Ham_Spawn, "player", "fw_PlayerSpawn_Post", 1, true)
+
+public fw_PlayerSpawn_Post(id) 
+{
+
+	if(!is_user_alive(id))
+		return HAM_IGNORED;
+
+return HAM_IGNORED;
+}
+
+// player killed
+
+RegisterHam(Ham_Killed, "player", "fw_PlayerKilled", 0, true)
+
+public fw_PlayerKilled(victim, attacker, shouldgib) {
+
+	if (is_user_alive(iVictim))
+		return
+
+}
+
+// player killed post
+
+RegisterHam(Ham_Killed, "player", "fw_PlayerKilled_Post", 1, true)
+
+public fw_PlayerKilled_Post(victim, attacker, shouldgib) {
+
+	if(!is_user_valid_alive(victim))
+		return;
+
+}
+
+// player take damage
+
+RegisterHam(Ham_TakeDamage, "player", "fw_TakeDamage", 0, true)
+
+public fw_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type) { // Ham Take Damage Forward
+	
+	if(!is_user_valid_alive(victim))
+		return HAM_IGNORED;
+	if(!is_user_valid_connected(attacker) && pev_valid(attacker)) {
+		return HAM_IGNORED;
+	}
+	
+	return HAM_SUPERCEDE;
+}
+
+// player take damage post
+
+RegisterHam(Ham_TakeDamage, "player", "fw_TakeDamage_Post", 1, true)
+
+public fw_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type) { // Ham Take Damage Post Forward
+	if(!is_user_valid_alive(victim))
+		return;
+
+}
 
 
-■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ Forwards ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// event round end
+
+register_logevent("logevent_round_end", 2, "1=Round_End")
+
+public logevent_round_end() {
+	for(id = 1; id <= MaxClients; id++)
+	{
+		
+	}
+	
+}
+
+// event map ended (maybe changing)
+
+register_event("30", "event_intermission", "a")
+
+public event_intermission()
+{
+	remove_task(TASK_AMBIENCESOUNDS); // Remove ambience sounds task
+}
+
+// trace attack
+
+RegisterHam(Ham_TraceAttack, "player", "fw_TraceAttack", 0, true)
+
+public fw_TraceAttack(victim, attacker, Float:damage, Float:direction[3], tracehandle, damage_type) { // Ham Trace Attack Forward
+	if(victim == attacker || !is_user_valid_connected(attacker) || !is_user_valid_connected(victim)) return HAM_IGNORED; // Non-player damage or self damage
+
+	if(g_newround)
+		return HAM_SUPERCEDE;
+
+	return HAM_IGNORED;
+}
+
+// client put in the server
+
+public client_putinserver(id) { // Client joins the game
+
+}
+
+// client disconnected
+register_forward(FM_ClientDisconnect, "fw_ClientDisconnect")
+
+// client disconnected post
+register_forward(FM_ClientDisconnect, "fw_ClientDisconnect_Post", 1)
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ Forward call and functions - reapi ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+// spawn post
+RegisterHookChain(RG_CBasePlayer_Spawn, "fw_PlayerSpawn_Post", 1)
+
+public fw_PlayerSpawn_Post(const id)
+{
+	if (!is_user_alive(id))
+		return
+
+}
+
+// player killed post
+RegisterHookChain(RG_CBasePlayer_Killed, "fw_PlayerKilled_Post", 1)
+
+public fw_PlayerKilled_Post(const iVictim, const iAttacker, const iGibs)
+{
+
+	if (is_user_alive(iVictim))
+		return
+
+}
+
+// player take damage post
+
+RegisterHookChain(RG_CBasePlayer_TakeDamage, "fw_TakeDamage_Post", 1)
+
+public fw_TakeDamage_Post(const iVictim, const iInflector, const iAttacker, const Float:flDamage, const bitsDamageType)
+{
+	// Damage himself?
+	if (iVictim == iAttacker || !is_user_connected(iVictim))
+		return
+	
+}
+
 */
 
 const GRENADES_BIT_SUM = ((1<<_:WEAPON_HEGRENADE)|(1<<_:WEAPON_SMOKEGRENADE)|(1<<_:WEAPON_FLASHBANG))
