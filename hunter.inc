@@ -107,7 +107,12 @@ public fw_TakeDamage(victim, inflictor, attacker, Float:damage, damage_type) { /
 	if(!is_user_valid_connected(attacker) && pev_valid(attacker)) {
 		return HAM_IGNORED;
 	}
-	
+
+	if(is_user_alive(attacker))
+	{
+		SetHamParamFloat(4, damage * 2.5)
+	}
+
 	return HAM_SUPERCEDE;
 }
 
@@ -302,7 +307,10 @@ public fw_TakeDamage_Post(const iVictim, const iInflector, const iAttacker, cons
 	// Damage himself?
 	if (iVictim == iAttacker || !is_user_connected(iVictim))
 		return
-	
+	if(is_user_alive(iAttacker))
+	{
+		SetHookChainArg(4, ATYPE_FLOAT, flDamage * 2.5)
+	}
 }
 
 // trace attack pre
