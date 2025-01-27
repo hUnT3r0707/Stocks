@@ -1,6 +1,65 @@
 // Copyright © 2017 Vaqtincha
 /*
 
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ clcmds ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+server_cmd("endround") // end round
+server_cmd("mp_freeforall 1") // kill anyone
+erver_cmd("mp_round_infinite 0") // not infinite
+erver_cmd("mp_round_infinite abf") // infinite
+
+
+// M/Change team
+	register_clcmd("chooseteam", "clcmd_changeteam")
+	register_clcmd("jointeam", "clcmd_changeteam")
+
+public clcmd_changeteam(id) { // Block Team Change
+
+	// either you can use this or
+	static team; team = fm_cs_get_user_team(id)
+	if(team == FM_CS_TEAM_SPECTATOR || team == FM_CS_TEAM_UNASSIGNED) return PLUGIN_CONTINUE; // Unless it's a spectator joining the game
+
+	// alternatively you can use this too
+
+	if (!is_user_connected(id)) // auto team join plugin will be needed
+		return PLUGIN_CONTINUE
+
+	show_menu_game(id) // Pressing 'M' (chooseteam) ingame should show the main menu instead
+	return PLUGIN_HANDLED;
+}
+
+// G/Drop weapon
+	register_clcmd("drop", "clcmd_drop")
+
+public clcmd_drop(id) { // block damage
+	if(is_user_alive(id)) return PLUGIN_HANDLED
+
+	show_menu_game(id) // Pressing 'G' (drop) ingame should show the main menu instead
+	return PLUGIN_CONTINUE;
+}
+
+// impulse bind
+
+	register_impulse(100, "impulse_flashlight")
+
+public impulse_flashlight()
+{
+    if(!is_user_alive(id)) return PLUGIN_CONTINUE; // remove check to not allow at all
+    
+    show_menu_game(id) // Pressing 'F' (flashlight) ingame should show the main menu instead
+    return PLUGIN_HANDLED;
+}
+
+	register_impulse(201, "impulse_spray")
+
+public impulse_spray()
+{
+    if(!is_user_alive(id)) return PLUGIN_CONTINUE; // remove check to not allow at all
+    
+    show_menu_game(id) // Pressing 'F' (flashlight) ingame should show the main menu instead
+    return PLUGIN_HANDLED;
+}
+
 put calls in plugin_init and functions are like public xyz
 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ Forward call and functions - hamsandwich & others ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
@@ -61,28 +120,6 @@ public fw_TakeDamage_Post(victim, inflictor, attacker, Float:damage, damage_type
 	if(!is_user_valid_alive(victim))
 		return;
 
-}
-
-
-// event round end
-
-register_logevent("logevent_round_end", 2, "1=Round_End")
-
-public logevent_round_end() {
-	for(id = 1; id <= MaxClients; id++)
-	{
-		
-	}
-	
-}
-
-// event map ended (maybe changing)
-
-register_event("30", "event_intermission", "a")
-
-public event_intermission()
-{
-	remove_task(TASK_AMBIENCESOUNDS); // Remove ambience sounds task
 }
 
 // trace attack
@@ -180,11 +217,43 @@ public client_putinserver(id) { // Client joins the game
 register_event("HLTV", "event_round_start", "a", "1=0", "2=0")
 
 public event_round_start() { // Event Round Start
+
+	g_freezetime = true // Freezetime begins
+
 	for(new id = 1; i <= MaxClients; id++)
 		if(is_user_alive(id))
 		{
 			fm_set_user_health(id, fm_get_user_health(id) + 100)
 		}
+}
+
+// event round start once freeze time ends
+
+register_logevent("logevent_round_start",2, "1=Round_Start")
+
+public logevent_round_start() {
+	g_freezetime = false // Freezetime ends
+}
+
+// event round end
+
+register_logevent("logevent_round_end", 2, "1=Round_End")
+
+public logevent_round_end() {
+	for(id = 1; id <= MaxClients; id++)
+	{
+		save_stats(id)
+	}
+	remove_task(TASK_WELCOMEMSG)
+}
+
+// event map ended (maybe changing)
+
+register_event("30", "event_intermission", "a")
+
+public event_intermission()
+{
+	remove_task(TASK_AMBIENCESOUNDS); // Remove ambience sounds task
 }
 
 // fakemta teams
